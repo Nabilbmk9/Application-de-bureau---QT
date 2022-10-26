@@ -21,6 +21,7 @@ class MainWindow(QtWidgets.QWidget):
         self.btn_createNote = QtWidgets.QPushButton("Create Note")
         self.lw_notes = QtWidgets.QListWidget()
         self.te_content = QtWidgets.QTextEdit()
+
     def modify_widgets(self):
         pass
 
@@ -38,6 +39,8 @@ class MainWindow(QtWidgets.QWidget):
         self.lw_notes.itemSelectionChanged.connect(self.populate_note_content)
         QtWidgets.QShortcut(QtGui.QKeySequence("Backspace"), self.lw_notes, self.delete_selected_note)
 
+    ###### END UI CODE ######
+ 
     def add_note_to_listwidget(self, note):
         lw_item = QtWidgets.QListWidgetItem(note.title)
         lw_item.note = note
@@ -51,15 +54,33 @@ class MainWindow(QtWidgets.QWidget):
             self.add_note_to_listwidget(note)
 
     def delete_selected_note(self):
-        print("Delete Note")
+        selected_item = self.get_selected_lw_item()
+        if selected_item:
+            resultat = selected_item.note.delete()
+            if resultat:
+                self.lw_notes.takeItem(self.lw_notes.row(selected_item))
     
+    def get_selected_lw_item(self):
+        selected_items = self.lw_notes.selectedItems()
+        if selected_items:
+            return selected_items[0]
+        return None
+
     def populate_notes(self):
         notes = get_notes()
         for note in notes:
             self.add_note_to_listwidget(note)
 
     def populate_note_content(self):
-        print("Populate Note Content")
+        selected_item = self.get_selected_lw_item()
+        if selected_item:
+            self.te_content.setText(selected_item.note.content)
+        else:
+            self.te_content.clear()
 
     def save_note(self):
-        print("Save Note")
+        selected_item = self.get_selected_lw_item()
+        if selected_item:
+            selected_item.note.content = self.te_content.toPlainText()
+            selected_item.note.save()
+             
